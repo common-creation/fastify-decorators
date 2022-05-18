@@ -1,0 +1,26 @@
+{
+  "name": "@common-creation/fastify-decorators",
+  "description": "decorator collections for fastify",
+  "version": "0.1.0",
+  "main": "index.js",
+  "author": "Common Creation, LLC",
+  "license": "MIT",
+  "private": false,
+  "repository": "github:common-creation/fastify-decorators",
+  "devDependencies": {
+    "@types/node": "^17.0.34",
+    "fastify": "^3.29.0",
+    "typescript": "^4.6.4"
+  },
+  "peerDependencies": {
+    "@types/node": "^17.0.34",
+    "fastify": "^3.29.0"
+  },
+  "scripts": {
+    "build": "tsc && cp -f package.json README.md ./dist/",
+    "clean": "rm -rf dist",
+    "distlink": "cd ./dist/ && yarn link",
+    "prepublish": "yarn clean && yarn build",
+    "publish:npm": "yarn publish --access public --registry https://registry.npmjs.org ./dist/"
+  }
+}
