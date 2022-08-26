@@ -20,7 +20,6 @@
     "build": "tsc && cp -f package.json README.md ./dist/",
     "clean": "rm -rf dist",
     "distlink": "cd ./dist/ && yarn link",
-    "prepublish": "yarn clean && yarn build",
-    "publish:npm": "yarn publish --access public --registry https://registry.npmjs.org ./dist/"
+    "publish:npm": "yarn clean && yarn build && yarn publish --access public --registry https://registry.npmjs.org ./dist/"
   }
 }
