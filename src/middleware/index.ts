@@ -1,7 +1,7 @@
-import { FastifyReply, FastifyRequest } from "fastify";
+import type { FastifyReply, FastifyRequest } from "fastify";
 
-export const middleware = (
-  func: (req: FastifyRequest, res: FastifyReply, next: (nextReq: FastifyRequest, nextRes: FastifyReply) => any) => any,
+export const middleware = <T>(
+  func: (req: FastifyRequest<T>, res: FastifyReply, next: (nextReq: FastifyRequest<T>, nextRes: FastifyReply) => any) => any,
 ) => {
   return (target: Function, key: string, descriptor: any) => {
     if (descriptor === undefined) {
@@ -9,7 +9,7 @@ export const middleware = (
     }
     const originalMethod = descriptor.value;
 
-    descriptor.value = (currentReq: FastifyRequest, currentRes: FastifyReply) =>
+    descriptor.value = (currentReq: FastifyRequest<T>, currentRes: FastifyReply) =>
       func(currentReq, currentRes, (nextReq, nextRes) => {
         return originalMethod.apply(target, [nextReq, nextRes]);
       });

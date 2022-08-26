@@ -1,7 +1,7 @@
 {
   "name": "@common-creation/fastify-decorators",
   "description": "decorator collections for fastify",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "main": "index.js",
   "author": "Common Creation, LLC",
   "license": "MIT",
