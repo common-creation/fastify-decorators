@@ -2,8 +2,8 @@
 
 ## decorators
 
-- [middleware](./src/middleware/README.md)
-- [route](./src/route/README.md)
+- [middleware](./src/middleware/)
+- [route](./src/route/)
 
 ## install
 
