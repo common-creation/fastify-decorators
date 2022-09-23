@@ -3,15 +3,20 @@ import { join } from "path";
 
 let _prefix = "";
 
+/**
+ * @deprecated use registerRoutes params. 
+ */
 export function setPrefix(prefix: string) {
   _prefix = prefix || "";
 }
 
 export function route(path: string) {
   return (target: any) => {
-    const normalizedPath = join("/", _prefix, path);
     return class extends target {
-      public static register(server: FastifyInstance, opts: any, next: () => void): void {
+      public static register(server: FastifyInstance, opts: { internalPrefix: string }, next: () => void): void {
+        const internalPrefix = opts.internalPrefix || _prefix;
+        const normalizedPath = join("/", internalPrefix, path);
+
         if (target.get) {
           server.log.debug({ method: "GET", path: normalizedPath, func: `${target.name}.get` }, "register route");
           server.get(normalizedPath, target.get);
@@ -53,8 +58,10 @@ export class BaseController {
   }
 }
 
-export function registerRoutes(server: FastifyInstance, routes: IBaseController[]) {
+export function registerRoutes(server: FastifyInstance, routes: IBaseController[], prefix?: string) {
   routes.forEach((route) => {
-    server.register(route.register);
+    server.register(route.register, {
+      internalPrefix: prefix || "",
+    });
   });
 }
