@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { join } from "path";
+import { default as nodePath } from "path";
 
 let _prefix = "";
 
@@ -15,7 +15,7 @@ export function route(path: string) {
     return class extends target {
       public static register(server: FastifyInstance, opts: { internalPrefix: string }, next: () => void): void {
         const internalPrefix = opts.internalPrefix || _prefix;
-        const normalizedPath = join("/", internalPrefix, path);
+        const normalizedPath = nodePath.posix.join("/", internalPrefix, path);
 
         if (target.get) {
           server.log.debug({ method: "GET", path: normalizedPath, func: `${target.name}.get` }, "register route");
