@@ -7,6 +7,8 @@
 
 ## install
 
+> If you use `fastify@3`, you can use `@common-creation/fastify-decorators@^0.3.x`.
+
 ### yarn
 
 ```sh

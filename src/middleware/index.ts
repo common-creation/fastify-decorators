@@ -1,6 +1,6 @@
-import type { FastifyReply, FastifyRequest } from "fastify";
+import type { FastifyReply, FastifyRequest, RouteGenericInterface } from "fastify";
 
-export const middleware = <T>(
+export const middleware = <T extends RouteGenericInterface>(
   func: (req: FastifyRequest<T>, res: FastifyReply, next: (nextReq: FastifyRequest<T>, nextRes: FastifyReply) => any) => any,
 ) => {
   return (target: Function, key: string, descriptor: any) => {

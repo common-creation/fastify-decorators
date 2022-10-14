@@ -148,7 +148,9 @@ const testCases: TestCases = {
 
 describe("route", () => {
   describe("route without prefix", () => {
-    const fastify = Fastify();
+    const fastify = Fastify({
+      exposeHeadRoutes: false,
+    });
     registerRoutes(fastify, [RootController, SomeController]);
 
     for (const targetCaseKeys of Object.keys(testCases)) {
@@ -167,7 +169,9 @@ describe("route", () => {
   });
 
   describe("route with prefix", () => {
-    const fastify = Fastify();
+    const fastify = Fastify({
+      exposeHeadRoutes: false,
+    });
     registerRoutes(fastify, [RootController, SomeController], "api");
 
     for (const targetCaseKeys of Object.keys(testCases)) {
@@ -186,7 +190,9 @@ describe("route", () => {
   });
 
   describe("route with prefix with trailing slash", () => {
-    const fastify = Fastify();
+    const fastify = Fastify({
+      exposeHeadRoutes: false,
+    });
     registerRoutes(fastify, [RootController, SomeController], "api/");
 
     for (const targetCaseKeys of Object.keys(testCases)) {
