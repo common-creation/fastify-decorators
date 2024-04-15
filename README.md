@@ -2,6 +2,7 @@
 
 ## decorators
 
+- [lambdaroute](./src/lambdaroute/)
 - [middleware](./src/middleware/)
 - [route](./src/route/)
 
