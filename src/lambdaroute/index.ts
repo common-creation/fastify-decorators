@@ -1,5 +1,5 @@
 import type { APIGatewayEvent } from "aws-lambda";
-import type { FastifyInstance, FastifyReply, FastifyRequest, HTTPMethods, RouteHandlerMethod } from "fastify";
+import type { FastifyInstance, FastifyReply, FastifyRequest, HTTPMethods } from "fastify";
 import FindMyWay from "find-my-way";
 import { IncomingMessage, ServerResponse } from "http";
 
@@ -22,32 +22,65 @@ export class BaseController {
   }
 }
 
+export type RouteInfo = {[path: string]: () => Promise<{ default: IBaseController}>}
+
 export class LambdaController {
+  private server: FastifyInstance;
+  private finder: FindMyWay.Instance<FindMyWay.HTTPVersion.V1>;
   private router: FindMyWay.Instance<FindMyWay.HTTPVersion.V1>;
+  private routes: RouteInfo;
 
-  constructor(server: FastifyInstance) {
-    this.router = FindMyWay();
-
-    this.registerCatchAll(server);
+  public static inject(server: FastifyInstance, routes: RouteInfo) {
+    new LambdaController(server, routes);
   }
 
-  private registerCatchAll(server: FastifyInstance) {
-    server.route({
+  private constructor(server: FastifyInstance, routes: RouteInfo) {
+    this.server = server;
+    this.routes = routes;
+    this.finder = FindMyWay();
+    this.router = FindMyWay();
+
+    this.registerRoutes();
+    this.registerCatchAll();
+  }
+
+  private registerCatchAll() {
+    this.server.route({
       method: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
       url: "/*",
       handler: async (request: FastifyRequest, reply: FastifyReply) => {
         const path = (Array.isArray(request.headers[":path"]) ? request.headers[":path"][0] : request.headers[":path"]) || request.raw.url?.split("?")[0] || "";
-        if (!this.router.find(request.method as HTTPMethods, path)) {
-          reply.status(404).send({
-            message:`Route ${request.method}:${request.url} not found in LambdaController`,
-            error: "Not Found",
-            statusCode: 404
-          });
+        const route = this.finder.find("GET", path);
+        if (!route) {
+          this.sendError(request, reply, `Route ${request.method}:${request.url} not found in LambdaController`);
           return;
+        }
+        const dummyIncomingMessage = { url: path, method: "GET" };
+        route.handler(dummyIncomingMessage as unknown as IncomingMessage, {} as unknown as ServerResponse, {}, {}, {});
+        if (!this.router.find(request.method as HTTPMethods, dummyIncomingMessage.url)) {
+          const routeInfo = this.routes[dummyIncomingMessage.url];
+          const controller: any = (await routeInfo()).default;
+          const handler = controller[request.method.toLowerCase()];
+          if (handler) {
+            this.router.on(request.method as HTTPMethods, dummyIncomingMessage.url, this.wrapHandler(handler));
+          }
         }
         this.router.lookup(request as unknown as IncomingMessage, reply as unknown as ServerResponse);
       },
     })
+  }
+
+  private registerRoutes() {
+    const paths = Object.keys(this.routes);
+    for (const path of paths) {
+      this.finder.on("GET", path, this.finderHandler(path));
+    }
+  }
+
+  private finderHandler(path: string) {
+    return (request: IncomingMessage, reply: ServerResponse, params: unknown) => {
+      request.url = path;
+    };
   }
 
   private wrapHandler(handler: any) {
@@ -57,17 +90,15 @@ export class LambdaController {
     };
   }
 
-  public async registerRoutes(routes: {[path: string]: Promise<{ default: IBaseController}>}, event: APIGatewayEvent) {
-    if (this.router.find(event.httpMethod as HTTPMethods, event.path)) {
+  private sendError(request: FastifyRequest, reply: FastifyReply, message: string) {
+    if (request.method !== "HEAD") {
+      reply.status(404).send({
+        message,
+        error: "Not Found",
+        statusCode: 404
+      });
       return;
     }
-    for (const route of Object.keys(routes).filter(path => path === event.path)) {
-      const controller: any = (await routes[route]).default;
-      const handler = controller[event.httpMethod.toLowerCase()];
-      if (handler) {
-        this.router.on(event.httpMethod as HTTPMethods, route, this.wrapHandler(handler));
-      }
-    }
+    reply.status(404).send();
   }
 }
-

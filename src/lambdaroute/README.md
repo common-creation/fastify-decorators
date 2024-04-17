@@ -3,7 +3,7 @@
 ## usage
 
 ```ts
-import { BaseController, lambdaroute } from "@common-creation/fastify-decorators";
+import { BaseController, lambdaroute } from "@common-creation/fastify-decorators/lambdaroute";
 import type { FastifyReply, FastifyRequest } from "fastify";
 
 @lambdaroute()
@@ -30,22 +30,22 @@ export default class RootController extends BaseController {
 ```
 
 ```ts
-import { BaseController, registerRoutes, route } from "@common-creation/fastify-decorators";
+import { BaseController, registerRoutes, route } from "@common-creation/fastify-decorators/lambdaroute";
 import awsLambdaFastify from "@fastify/aws-lambda";
 import fastify, { FastifyReply, FastifyRequest } from "fastify";
 
 let lambda: any;
 let lambdaController: LambdaController;
-exports.handler = async (event: any, result: any) => {
+exports.handler = async (event: APIGatewayEvent, result: any) => {
   if (!lambda) {
     const f = fastify();
-    lambdaController = new LambdaController(f);
     const controllers = {
       "/": import("./RootController"),
     };
+    LambdaController.inject(f, controllers);
+
     lambda = await awsLambdaFastify(f);
   }
-  await lambdaController.registerRoutes(controllers, { path: url } as any as APIGatewayEvent);
   return lambda(event, result);
 };
 ```

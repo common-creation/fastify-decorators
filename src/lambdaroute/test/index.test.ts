@@ -143,26 +143,28 @@ describe("route", () => {
       exposeHeadRoutes: false,
     });
 
-    const lambdaController = new LambdaController(fastify);
-
     const controllers = {
-      [testCases.root.url]: import("./controllers/RootController"),
-      [testCases.some.url]: import("./controllers/SomeController"),
-      [testCases.wildcard.url]: import("./controllers/WildcardController"),
-      [testCases.middleware.url]: import("./controllers/MiddlewareController"),
-      [testCases.params.url]: import("./controllers/ParamsController"),
+      [testCases.root.url]: () => import("./controllers/RootController"),
+      [testCases.some.url]: () => import("./controllers/SomeController"),
+      [testCases.wildcard.url]: () => import("./controllers/WildcardController"),
+      [testCases.middleware.url]: () => import("./controllers/MiddlewareController"),
+      [testCases.params.url]: () => import("./controllers/ParamsController"),
     };
+
+    LambdaController.inject(fastify, controllers);
 
     for (const targetCaseKeys of Object.keys(testCases)) {
       const targetCase = testCases[targetCaseKeys];
       const { url, injectUrl } = targetCase;
       for (const testCase of targetCase.expects) {
-        test(`${testCase.method} ${url} ${injectUrl}`, async () => {
-          await lambdaController.registerRoutes(controllers, { path: url, httpMethod: testCase.method } as any as APIGatewayEvent);
+        test(`${testCase.method} ${url} <- ${injectUrl}`, async () => {
           const response = await fastify.inject({
             url: injectUrl,
             method: testCase.method,
           });
+          if (response.statusCode !== testCase.status) {
+            console.log(response.body);
+          }
           expect(response.statusCode).toBe(testCase.status);
         });
       }
