@@ -1,4 +1,3 @@
-import type { APIGatewayEvent } from "aws-lambda";
 import type { FastifyInstance, FastifyReply, FastifyRequest, HTTPMethods } from "fastify";
 import FindMyWay from "find-my-way";
 import { IncomingMessage, ServerResponse } from "http";
@@ -46,7 +45,7 @@ export class LambdaController {
 
   private registerCatchAll() {
     this.server.route({
-      method: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
+      method: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"],
       url: "/*",
       handler: async (request: FastifyRequest, reply: FastifyReply) => {
         const path = (Array.isArray(request.headers[":path"]) ? request.headers[":path"][0] : request.headers[":path"]) || request.raw.url?.split("?")[0] || "";
