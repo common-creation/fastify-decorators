@@ -95,6 +95,16 @@ const testCases: TestCases = {
       },
     ],
   },
+  middleware: {
+    url: "/path/to/middleware",
+    injectUrl: "/path/to/middleware",
+    expects: [
+      {
+        method: "GET",
+        status: 200,
+      },
+    ],
+  },
   invalid: {
     url: "/path/to/invalid/endpoint",
     injectUrl: "/path/to/invalid/endpoint",
@@ -139,6 +149,7 @@ describe("route", () => {
       [testCases.root.url]: import("./controllers/RootController"),
       [testCases.some.url]: import("./controllers/SomeController"),
       [testCases.wildcard.url]: import("./controllers/WildcardController"),
+      [testCases.middleware.url]: import("./controllers/MiddlewareController"),
       [testCases.params.url]: import("./controllers/ParamsController"),
     };
 
