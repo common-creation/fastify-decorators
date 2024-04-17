@@ -45,7 +45,7 @@ export class LambdaController {
           });
           return;
         }
-        this.router.lookup(request.raw as unknown as IncomingMessage, reply as unknown as ServerResponse);
+        this.router.lookup(request as unknown as IncomingMessage, reply as unknown as ServerResponse);
       },
     })
   }
